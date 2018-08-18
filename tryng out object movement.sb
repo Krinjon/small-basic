@@ -1,0 +1,179 @@
+''Main()
+'{
+InitializeComponents()
+AddSnake()
+CreateFood()
+
+While ("True")
+  start = Clock.ElapsedMilliseconds
+  
+  gameloop()
+  Collision()
+     For  i = 0 to  total-1
+    Shapes.HideShape(block[i])
+  EndFor
+  For  i = 0 to  total-1
+    Shapes.Move(block[i],posX[i],posY[i])
+  EndFor
+  For  i = 0 to  total-1
+    Shapes.ShowShape(block[i])
+  EndFor
+  'A delay up to 20 ms (50 fps) depending on time spent doing work preparing frame update
+  delay = 100- (Clock.ElapsedMilliseconds - start)
+  
+  If (delay > 0) Then
+    Program.Delay(delay)
+  Else 
+    Sound.PlayClick()
+  EndIf
+ 
+  
+EndWhile
+'}
+Sub InitializeComponents
+  sq = 10
+  blockH = sq
+  blockW = sq
+  si = 0
+  GraphicsWindow.Height= 700
+  GraphicsWindow.Width = 700
+  GraphicsWindow.KeyDown = KeyDown
+  scl = sq
+  velocity = 1*scl
+  prevPosX[si] = 0
+  prevPosy[si] = 0
+  posX[si] = 0
+  posY[si] = 0
+  total = 1
+  GraphicsWindow.BackgroundColor = "#696969"
+EndSub
+
+''create snake 
+Sub AddSnake
+  block[si] = Shapes.AddRectangle(blockW,blockH)
+  'block[si] = Shapes.AddText(si)
+  'Shapes.Zoom(block,scl,scl)
+  
+  Shapes.HideShape(block[si])
+  Shapes.Move(block[si],posX[si],posY[si])
+  Shapes.ShowShape(block[si])
+EndSub
+
+' create food
+Sub CreateFood
+  ''todo
+  foodI = 0
+  GraphicsWindow.BrushColor = "#2F4F4F"
+  food[foodI] = Shapes.AddRectangle(blockW,blockH)
+  FoodposX[foodI] = Math.GetRandomNumber((GraphicsWindow.Width-blockH)/scl)*scl
+  FoodposY[foodI] = Math.GetRandomNumber((GraphicsWindow.Height-blockH)/scl)*scl
+  Shapes.HideShape(food[foodI])
+  Shapes.Move(food[foodI],FoodposX[foodI],FoodposY[foodI])
+  Shapes.ShowShape(food[foodI])
+  GraphicsWindow.BrushColor = "Blue"
+EndSub
+Sub AddBody
+  si = si+1
+  posX[si]= prevPosX[si-1]
+  posY[si] = prevPosY[si-1]
+  AddSnake()
+  total = total+1
+EndSub
+
+Sub Collision
+  
+  sepX = Math.Abs(FoodposX[0]-Shapes.GetLeft(block[0]))
+  sepY = Math.Abs(FoodposY[0]-Shapes.GetTop(block[0]))
+  If (sepX < blockW And sepY < blockH) Then
+    'Sound.PlayClickAndWait()
+    Shapes.Remove(food[0])
+    
+    CreateFood()
+    AddBody()
+  EndIf
+EndSub
+
+
+
+Sub KeyDown
+  lkey= GraphicsWindow.LastKey
+  If lkey = "Right" Then
+    dirX = velocity
+    dirY = 0
+  ElseIf lkey = "Left" Then
+    dirX = -velocity
+    dirY = 0
+  ElseIf lkey = "Up" Then
+    dirX = 0
+    dirY = -velocity
+  ElseIf lkey = "Down" Then
+    dirX = 0
+    dirY = velocity
+  EndIf
+EndSub
+Sub MoveHead 
+  prevPosX[0] = posX[i]
+  prevPosY[0]= posY[i] 
+  addToScale:
+  posX[i] = posX[i]+dirX
+  posY[i] = posY[i]+dirY
+  If Math.Remainder(posX[i],scl)<>0 And Math.Remainder(posY[i],scl)<>0 Then
+    posX[i] = prevPosX[0]
+    posY[i] = prevPosY[0]
+    Goto addToScale
+  EndIf
+  If posX[i]<= GraphicsWindow.Width-blockW And posX[i]>=0 And posY[i]<=GraphicsWindow.Height-blockH And posY[i]>=0  Then 'And posY< GraphicsWindow.Height And posY>0 
+    
+    'Shapes.Move(block[i],posX[i],posY[i])
+    
+    
+  ElseIf posX[i]<0 then
+    'dirX = 0
+    posX[i] = GraphicsWindow.Width-blockW
+  ElseIf posY[i]<0 then
+    'dirY = 0
+    posY[i] = GraphicsWindow.Height-blockH
+  ElseIf posX[i]>GraphicsWindow.Width-blockW then
+    'dirX = 0
+    posX[i] = 0
+  ElseIf posY[i]>GraphicsWindow.Height-blockH then
+    'dirY = 0
+    posY[i] = 0
+    
+  EndIf
+  
+  'Shapes.Move(block[i],posX[i],posY[i])
+EndSub
+
+
+
+Sub gameloop
+  TextWindow.Clear()
+  
+
+  
+  For  i = 0 to  total-1
+    If i = 0 Then
+      
+      MoveHead()
+    ElseIf i>0 then 
+      
+      prevPosX[i]= posX[i]
+      prevPosY[i] = posY[i]
+      
+      posX[i] = prevPosX[i-1]
+      posY[i] = prevPosy[i-1]
+      
+    EndIf
+    
+    TextWindow.Write("position X is "+ posX[i])
+    TextWindow.WriteLine("      position y is " +posY[i])
+    
+    TextWindow.Write("position X is "+ prevPosX[i])
+    TextWindow.WriteLine("      position y is " +prevPosy[i])
+  EndFor
+  
+  
+  'Program.Delay(3)
+EndSub
+
