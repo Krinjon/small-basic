@@ -1,7 +1,6 @@
 ''Main()
 '{
 'hello
-'the new approch
 InitializeComponents()
 AddSnake()
 CreateFood()
